@@ -1,0 +1,185 @@
+     1                                  bits 32
+     2                                  global start
+     3                                  
+     4                                  extern exit, scanf, printf
+     5                                  import exit msvcrt.dll
+     6                                  import scanf msvcrt.dll
+     7                                  import printf msvcrt.dll
+     8                                   
+     9                                  
+    10                                  segment data use32 class=data
+    11 00000000 00<rept>                    sir times 20 db 0
+    12 00000014 00<rept>                    sir_afisare times 20 db 0  ; Adăugăm o nouă secțiune de date pentru a stoca șirul afișat
+    13 00000028 257300                      formatCit db '%s', 0
+    14 0000002B 496E74726F64756365-         mesaj db 'Introduceti un sir de caractere (minim 10, maxim 20):', 0
+    14 00000034 746920756E20736972-
+    14 0000003D 206465206361726163-
+    14 00000046 7465726520286D696E-
+    14 0000004F 696D2031302C206D61-
+    14 00000058 78696D203230293A00 
+    15 00000061 45524F4152453A2041-         mesaj_mai_putin db 'EROARE: Ati introdus mai putin de 10 caractere!', 0
+    15 0000006A 746920696E74726F64-
+    15 00000073 7573206D6169207075-
+    15 0000007C 74696E206465203130-
+    15 00000085 206361726163746572-
+    15 0000008E 652100             
+    16 00000091 0A0D45524F4152453A-         mesaj_impar db 10,13, 'EROARE: Ati introdus un numar impar de caractere intre 10 si 20!', 0
+    16 0000009A 2041746920696E7472-
+    16 000000A3 6F64757320756E206E-
+    16 000000AC 756D617220696D7061-
+    16 000000B5 722064652063617261-
+    16 000000BE 637465726520696E74-
+    16 000000C7 726520313020736920-
+    16 000000D0 32302100           
+    17 000000D4 0A0D434F4420434F52-         mesaj_corect db 10,13,'COD CORECT! Ati introdus un numar par de caractere intre 10 si 20!', 0
+    17 000000DD 454354212041746920-
+    17 000000E6 696E74726F64757320-
+    17 000000EF 756E206E756D617220-
+    17 000000F8 706172206465206361-
+    17 00000101 726163746572652069-
+    17 0000010A 6E7472652031302073-
+    17 00000113 692032302100       
+    18 00000119 0A0D45524F4152453A-         mesaj_eroare db 10,13,'EROARE: Ati introdus mai mult de 20 de caractere!', 0
+    18 00000122 2041746920696E7472-
+    18 0000012B 6F647573206D616920-
+    18 00000134 6D756C742064652032-
+    18 0000013D 302064652063617261-
+    18 00000146 63746572652100     
+    19 0000014D 0A0D536972756C2069-         mesaj_sir db 10,13,'Sirul introdus este: %s', 0
+    19 00000156 6E74726F6475732065-
+    19 0000015F 7374653A20257300   
+    20 00000167 0A0D446F7269746920-         mesaj_colorat db 10,13,'Doriti sa afisati sirul colorat? (colorat - c, necolorat - n): ', 0
+    20 00000170 736120616669736174-
+    20 00000179 6920736972756C2063-
+    20 00000182 6F6C6F7261743F2028-
+    20 0000018B 636F6C6F726174202D-
+    20 00000194 20632C206E65636F6C-
+    20 0000019D 6F726174202D206E29-
+    20 000001A6 3A2000             
+    21 000001A9 0A0D45524F4152453A-         mesaj_colorat_eroare db 10,13,'EROARE: Raspuns invalid! Introduceti!', 0
+    21 000001B2 2052617370756E7320-
+    21 000001BB 696E76616C69642120-
+    21 000001C4 496E74726F64756365-
+    21 000001CD 74692100           
+    22 000001D1 80                          culoare_verde db 0x80
+    23                                  
+    24                                  
+    25                                  
+    26                                  segment code use32 class=code
+    27                                  start:
+    28                                      ; afiseaza mesaj introductiv
+    29 00000000 68[2B000000]                push dword mesaj
+    30 00000005 FF15[00000000]              call [printf]
+    31 0000000B 83C404                      add esp, 4*1
+    32                                  
+    33 0000000E BE00000000                  mov ESI, 0
+    34                                      
+    35                                      ; citeste un sir de la tastatura
+    36 00000013 8D05[00000000]              lea eax, [sir]
+    37 00000019 50                          push eax
+    38 0000001A 68[28000000]                push dword formatCit
+    39 0000001F FF15[00000000]              call [scanf]
+    40 00000025 83C408                      add esp, 4*2
+    41                                  
+    42                                      ; calculate string length
+    43 00000028 B900000000                  mov ecx, 0
+    44                                  calc_length:
+    45 0000002D 80B9[00000000]00            cmp byte [sir + ecx], 0
+    46 00000034 7408                        je  ver
+    47 00000036 41                          inc ecx
+    48 00000037 83F914                      cmp ecx, 20
+    49 0000003A 7D15                        jge lungime
+    50 0000003C EBEF                        jmp calc_length
+    51                                  
+    52                                  ver:
+    53 0000003E 83F90A                      cmp ecx, 10
+    54 00000041 0F8CD7000000                jl nesuf
+    55                                      
+    56 00000047 F7C101000000                test ecx, 1                
+    57 0000004D 751A                        jnz impar    
+    58                                  
+    59 0000004F EB30                        jmp bun
+    60                                  
+    61                                  lungime:
+    62                                      ; Mesaj pentru sirul cu lungime incorecta
+    63 00000051 68[00000000]                push dword sir
+    64 00000056 68[19010000]                push dword mesaj_eroare
+    65 0000005B FF15[00000000]              call [printf]
+    66 00000061 83C408                      add esp, 4*2
+    67 00000064 E9C8000000                  jmp pa
+    68                                      
+    69                                  impar:
+    70 00000069 68[00000000]                push dword sir
+    71 0000006E 68[91000000]                push dword mesaj_impar
+    72 00000073 FF15[00000000]              call [printf]
+    73 00000079 83C408                      add esp, 4*2
+    74 0000007C E9B0000000                  jmp pa
+    75                                      
+    76                                  bun:
+    77                                      ; Afiseaza mesaj pentru cazul corect
+    78 00000081 68[00000000]                push dword sir
+    79 00000086 68[D4000000]                push dword mesaj_corect
+    80 0000008B FF15[00000000]              call [printf]
+    81 00000091 83C408                      add esp, 4*2
+    82                                  
+    83                                  msg:
+    84                                      ; Întreabă utilizatorul dacă dorește afișarea colorată
+    85 00000094 68[67010000]                push dword mesaj_colorat
+    86 00000099 FF15[00000000]              call [printf]
+    87 0000009F 83C404                      add esp, 4*1
+    88 000000A2 B900000000                  mov ecx, 0
+    89                                      
+    90                                  copy_sir:
+    91 000000A7 8A81[00000000]              mov al, [sir + ecx]
+    92 000000AD 8881[14000000]              mov [sir_afisare + ecx], al
+    93 000000B3 41                          inc ecx
+    94 000000B4 3C00                        cmp al, 0
+    95 000000B6 75EF                        jnz copy_sir
+    96                                  
+    97                                      ; Citeste raspunsul
+    98 000000B8 8D05[00000000]              lea eax, [sir]
+    99 000000BE 50                          push eax
+   100 000000BF 68[28000000]                push dword formatCit
+   101 000000C4 FF15[00000000]              call [scanf]
+   102 000000CA 83C408                      add esp, 4*2
+   103                                      
+   104                                      
+   105                                      ; Verifica raspunsul
+   106 000000CD 803D[00000000]63            cmp byte [sir], 'c'
+   107 000000D4 7419                        je afisare_colorata
+   108 000000D6 803D[00000000]6E            cmp byte [sir], 'n'
+   109 000000DD 742A                        je afisare_necolorata
+   110                                      
+   111                                      ; Raspuns invalid
+   112 000000DF 68[A9010000]                push dword mesaj_colorat_eroare
+   113 000000E4 FF15[00000000]              call [printf]
+   114 000000EA 83C404                      add esp, 4*1
+   115 000000ED EBA5                        jmp msg
+   116                                  
+   117                                  afisare_colorata:
+   118                                      ; Afișeaza intregul sir introdus cu verde
+   119 000000EF 68[14000000]                push dword sir_afisare
+   120 000000F4 68[D1010000]                push dword culoare_verde
+   121 000000F9 68[4D010000]                push dword mesaj_sir
+   122 000000FE FF15[00000000]              call [printf]
+   123 00000104 83C40C                      add esp, 4*3
+   124 00000107 EB28                        jmp pa
+   125                                      
+   126                                  afisare_necolorata:
+   127 00000109 68[14000000]                push dword sir_afisare
+   128 0000010E 68[4D010000]                push dword mesaj_sir
+   129 00000113 FF15[00000000]              call [printf]
+   130 00000119 83C408                      add esp, 4*2
+   131 0000011C EB13                        jmp pa
+   132                                  
+   133                                  
+   134                                  
+   135                                  nesuf:
+   136 0000011E 68[00000000]                push dword sir
+   137 00000123 68[61000000]                push dword mesaj_mai_putin
+   138 00000128 FF15[00000000]              call [printf]
+   139 0000012E 83C408                      add esp, 4*2
+   140                                  
+   141                                  pa:                   
+   142 00000131 6A00                        push dword 0
+   143 00000133 FF15[00000000]              call [exit]

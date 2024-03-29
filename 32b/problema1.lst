@@ -1,0 +1,125 @@
+     1                                  bits 32
+     2                                  global start        
+     3                                  
+     4                                  extern exit, scanf, printf
+     5                                  import exit msvcrt.dll
+     6                                  import printf msvcrt.dll 
+     7                                  import scanf msvcrt.dll
+     8                                   
+     9                                  
+    10                                  section data use32 class=data
+    11 00000000 00000000                    a dd 0
+    12 00000004 00000000                    b dd 0
+    13 00000008 256300                      formatcitit db '%c', 0
+    14 0000000B 257300                      formatcitit1 db '%s', 0
+    15 0000000E 496E74726F64756365-         format1 db 'Introduceti primul caracter: ', 0
+    15 00000017 7469207072696D756C-
+    15 00000020 206361726163746572-
+    15 00000029 3A2000             
+    16 0000002C 0A0D496E74726F6475-         format2 db 10, 13, 'Introduceti al doilea caracter: ', 0
+    16 00000035 6365746920616C2064-
+    16 0000003E 6F696C656120636172-
+    16 00000047 61637465723A2000   
+    17 0000004F 0A0D5072696D756C20-         format3 db 10, 13, 'Primul caracter in ordine alfabetica este: %c', 0
+    17 00000058 636172616374657220-
+    17 00000061 696E206F7264696E65-
+    17 0000006A 20616C666162657469-
+    17 00000073 636120657374653A20-
+    17 0000007C 256300             
+    18 0000007F 436172616374657275-         formatScr db 'Caracterul introdus a fost: %c ', 0
+    18 00000088 6C20696E74726F6475-
+    18 00000091 73206120666F73743A-
+    18 0000009A 2025632000         
+    19 0000009F 0A0D4E752061746920-         eroare db 10,13, 'Nu ati introdus o litera sau nu este o litera mare!', 0
+    19 000000A8 696E74726F64757320-
+    19 000000B1 6F206C697465726120-
+    19 000000BA 736175206E75206573-
+    19 000000C3 7465206F206C697465-
+    19 000000CC 7261206D6172652100 
+    20                                  
+    21                                  section code use32 class=code
+    22                                  start:
+    23                                  
+    24                                      ; Citire primul caracter
+    25 00000000 68[0E000000]                push dword format1
+    26 00000005 FF15[00000000]              call [printf]
+    27 0000000B 83C404                      add esp, 4 * 1
+    28                                  
+    29 0000000E 68[00000000]                push dword a
+    30 00000013 68[08000000]                push dword formatcitit
+    31 00000018 FF15[00000000]              call [scanf]
+    32 0000001E 83C408                      add esp, 4 * 2
+    33                                      
+    34                                      ; Afiseaza caracterul citit
+    35 00000021 FF35[00000000]              push dword [a]
+    36 00000027 68[7F000000]                push dword formatScr
+    37 0000002C FF15[00000000]              call [printf]
+    38 00000032 83C408                      add esp, 4*2
+    39                                      
+    40 00000035 A1[00000000]                mov eax , dword [a]
+    41 0000003A 83F841                      cmp eax, 'A'
+    42 0000003D 7C07                        jl er
+    43 0000003F 83F85A                      cmp eax, 'Z'
+    44 00000042 7F02                        jg er
+    45 00000044 EB13                        jmp citire
+    46                                      
+    47                                  er:
+    48 00000046 68[9F000000]                push dword eroare
+    49 0000004B FF15[00000000]              call [printf]
+    50 00000051 83C404                      add esp, 4 * 1
+    51 00000054 E982000000                  jmp iesi
+    52                                    
+    53                                  
+    54                                  citire:  
+    55                                      ; Citire al doilea caracter
+    56 00000059 68[2C000000]                push dword format2
+    57 0000005E FF15[00000000]              call [printf]
+    58 00000064 83C404                      add esp, 4 * 1
+    59                                  
+    60 00000067 68[04000000]                push dword b    
+    61 0000006C 68[0B000000]                push dword formatcitit1
+    62 00000071 FF15[00000000]              call [scanf]
+    63 00000077 83C408                      add esp, 4 * 2
+    64                                      
+    65                                      ; Afiseaza caracterul citit
+    66 0000007A FF35[04000000]              push dword [b]
+    67 00000080 68[7F000000]                push dword formatScr
+    68 00000085 FF15[00000000]              call [printf]
+    69 0000008B 83C408                      add esp, 4*2
+    70                                      
+    71 0000008E 8B1D[04000000]              mov ebx, dword [b]
+    72 00000094 83FB41                      cmp ebx, 'A'
+    73 00000097 7CAD                        jl er
+    74 00000099 83FB5A                      cmp ebx, 'Z'
+    75 0000009C 7FA8                        jg er
+    76                                  
+    77 0000009E A1[00000000]                mov eax, dword [a]
+    78 000000A3 8B1D[04000000]              mov ebx, dword [b]
+    79 000000A9 39D8                        cmp eax, ebx
+    80 000000AB 7C02                        jl caract1 ; a<b
+    81 000000AD 7D17                        jge caract2 ; a>b
+    82                                      
+    83                                      
+    84                                  caract1:
+    85                                      ; Afișare rezultat când primul caracter este mai mic
+    86 000000AF 50                          push eax   
+    87 000000B0 FF35[00000000]              push dword [a]
+    88 000000B6 68[4F000000]                push dword format3
+    89 000000BB FF15[00000000]              call [printf]
+    90 000000C1 83C408                      add esp, 4 * 2
+    91 000000C4 EB15                        jmp iesi
+    92                                  
+    93                                  
+    94                                  caract2:
+    95                                      ; Afișare rezultat când al doilea caracter este mai mic
+    96 000000C6 53                          push ebx
+    97 000000C7 FF35[04000000]              push dword [b]
+    98 000000CD 68[4F000000]                push dword format3
+    99 000000D2 FF15[00000000]              call [printf]
+   100 000000D8 83C408                      add esp, 4 * 2
+   101                                  
+   102                                      
+   103                                  iesi:
+   104 000000DB 6A00                        push dword 0
+   105 000000DD FF15[00000000]              call [exit]
+   106                                       

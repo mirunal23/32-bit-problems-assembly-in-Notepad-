@@ -1,0 +1,132 @@
+     1                                  bits 32
+     2                                  global start
+     3                                  
+     4                                  extern exit, scanf, printf
+     5                                  import exit msvcrt.dll
+     6                                  import scanf msvcrt.dll
+     7                                  import printf msvcrt.dll
+     8                                  
+     9                                  segment data use32 class=data
+    10 00000000 00<rept>                    sir times 20 db 0
+    11 00000014 00<rept>                    sir_afisare times 20 db 0  ; Adăugăm o nouă secțiune de date pentru a stoca șirul afișat
+    12 00000028 257300                      formatCit db '%s', 0
+    13 0000002B 496E74726F64756365-         mesaj db 'Introduceti un sir de caractere (minim 10, maxim 20):', 0
+    13 00000034 746920756E20736972-
+    13 0000003D 206465206361726163-
+    13 00000046 7465726520286D696E-
+    13 0000004F 696D2031302C206D61-
+    13 00000058 78696D203230293A00 
+    14 00000061 45524F4152453A2041-         mesaj_mai_putin db 'EROARE: Ati introdus mai putin de 10 caractere!', 0
+    14 0000006A 746920696E74726F64-
+    14 00000073 7573206D6169207075-
+    14 0000007C 74696E206465203130-
+    14 00000085 206361726163746572-
+    14 0000008E 652100             
+    15 00000091 0A0D45524F4152453A-         mesaj_impar db 10,13, 'EROARE: Ati introdus un numar impar de caractere intre 10 si 20!', 0
+    15 0000009A 2041746920696E7472-
+    15 000000A3 6F64757320756E206E-
+    15 000000AC 756D617220696D7061-
+    15 000000B5 722064652063617261-
+    15 000000BE 637465726520696E74-
+    15 000000C7 726520313020736920-
+    15 000000D0 32302100           
+    16 000000D4 0A0D434F4420434F52-         mesaj_corect db 10,13,'COD CORECT! Ati introdus un numar par de caractere intre 10 si 20!', 0
+    16 000000DD 454354212041746920-
+    16 000000E6 696E74726F64757320-
+    16 000000EF 756E206E756D617220-
+    16 000000F8 706172206465206361-
+    16 00000101 726163746572652069-
+    16 0000010A 6E7472652031302073-
+    16 00000113 692032302100       
+    17 00000119 0A0D45524F4152453A-         mesaj_eroare db 10,13,'EROARE: Ati introdus mai mult de 20 de caractere!', 0
+    17 00000122 2041746920696E7472-
+    17 0000012B 6F647573206D616920-
+    17 00000134 6D756C742064652032-
+    17 0000013D 302064652063617261-
+    17 00000146 63746572652100     
+    18 0000014D 0A0D536972756C2069-         mesaj_sir db 10,13,'Sirul introdus este: %s', 0
+    18 00000156 6E74726F6475732065-
+    18 0000015F 7374653A20257300   
+    19                                  
+    20                                  segment code use32 class=code
+    21                                  start:
+    22                                      ; afiseaza mesaj introductiv
+    23 00000000 68[2B000000]                push dword mesaj
+    24 00000005 FF15[00000000]              call [printf]
+    25 0000000B 83C404                      add esp, 4*1
+    26                                  
+    27 0000000E BE00000000                  mov ESI, 0
+    28                                      
+    29                                      ; citeste un sir de la tastatura
+    30 00000013 8D05[00000000]              lea eax, [sir]
+    31 00000019 50                          push eax
+    32 0000001A 68[28000000]                push dword formatCit
+    33 0000001F FF15[00000000]              call [scanf]
+    34 00000025 83C408                      add esp, 4*2
+    35                                  
+    36                                      ; calculate string length
+    37 00000028 B900000000                  mov ecx, 0
+    38                                  calc_length:
+    39 0000002D 80B9[00000000]00            cmp byte [sir + ecx], 0
+    40 00000034 7408                        je  ver
+    41 00000036 41                          inc ecx
+    42 00000037 83F914                      cmp ecx, 20
+    43 0000003A 7D11                        jge lungime
+    44 0000003C EBEF                        jmp calc_length
+    45                                  
+    46                                  ver:
+    47 0000003E 83F90A                      cmp ecx, 10
+    48 00000041 7C72                        jl nesuf
+    49                                      
+    50 00000043 F7C101000000                test ecx, 1                
+    51 00000049 7517                        jnz impar    
+    52                                  
+    53 0000004B EB2A                        jmp bun
+    54                                  
+    55                                  lungime:
+    56                                      ; Mesaj pentru sirul cu lungime incorecta
+    57 0000004D 68[00000000]                push dword sir
+    58 00000052 68[19010000]                push dword mesaj_eroare
+    59 00000057 FF15[00000000]              call [printf]
+    60 0000005D 83C408                      add esp, 4*2
+    61 00000060 EB66                        jmp pa
+    62                                      
+    63                                  impar:
+    64 00000062 68[00000000]                push dword sir
+    65 00000067 68[91000000]                push dword mesaj_impar
+    66 0000006C FF15[00000000]              call [printf]
+    67 00000072 83C408                      add esp, 4*2
+    68 00000075 EB51                        jmp pa
+    69                                      
+    70                                  bun:
+    71                                      ; Afiseaza mesaj pentru cazul corect
+    72 00000077 68[00000000]                push dword sir
+    73 0000007C 68[D4000000]                push dword mesaj_corect
+    74 00000081 FF15[00000000]              call [printf]
+    75 00000087 83C408                      add esp, 4*2
+    76                                  
+    77                                      ; Copiem șirul introdus într-o nouă secțiune de date pentru afișare ulterioară
+    78 0000008A B900000000                  mov ecx, 0
+    79                                      copy_sir:
+    80 0000008F 8A81[00000000]                  mov al, [sir + ecx]
+    81 00000095 8881[14000000]                  mov [sir_afisare + ecx], al
+    82 0000009B 41                              inc ecx
+    83 0000009C 3C00                            cmp al, 0
+    84 0000009E 75EF                            jnz copy_sir
+    85                                      
+    86                                      ; Afiseaza intregul sir introdus
+    87 000000A0 68[14000000]                push dword sir_afisare
+    88 000000A5 68[4D010000]                push dword mesaj_sir
+    89 000000AA FF15[00000000]              call [printf]
+    90 000000B0 83C408                      add esp, 4*2
+    91 000000B3 EB13                        jmp pa
+    92                                  
+    93                                  nesuf:
+    94 000000B5 68[00000000]                push dword sir
+    95 000000BA 68[61000000]                push dword mesaj_mai_putin
+    96 000000BF FF15[00000000]              call [printf]
+    97 000000C5 83C408                      add esp, 4*2
+    98                                  
+    99                                  pa:                   
+   100 000000C8 6A00                        push dword 0
+   101 000000CA FF15[00000000]              call [exit]

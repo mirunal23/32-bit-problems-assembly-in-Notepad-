@@ -1,0 +1,116 @@
+     1                                  bits 32
+     2                                  global start
+     3                                  
+     4                                  extern exit, scanf, printf
+     5                                  import exit msvcrt.dll
+     6                                  import scanf msvcrt.dll
+     7                                  import printf msvcrt.dll
+     8                                  
+     9                                  segment data use32 class=data
+    10 00000000 00<rept>                    sir times 20 db 0
+    11 00000014 257300                      formatCit db '%s', 0
+    12 00000017 496E74726F64756365-         mesaj db 'Introduceti un sir de caractere (minim 10, maxim 20):', 0
+    12 00000020 746920756E20736972-
+    12 00000029 206465206361726163-
+    12 00000032 7465726520286D696E-
+    12 0000003B 696D2031302C206D61-
+    12 00000044 78696D203230293A00 
+    13 0000004D 0A0D45524F4152453A-         mesaj_mai_putin db 10, 13, 'EROARE: Ati introdus mai putin de 10 caractere!', 0
+    13 00000056 2041746920696E7472-
+    13 0000005F 6F647573206D616920-
+    13 00000068 707574696E20646520-
+    13 00000071 313020636172616374-
+    13 0000007A 6572652100         
+    14 0000007F 0A0D45524F4152453A-         mesaj_impar db 10, 13, 'EROARE: Ati introdus un numar impar de caractere intre 10 si 20!', 0
+    14 00000088 2041746920696E7472-
+    14 00000091 6F64757320756E206E-
+    14 0000009A 756D617220696D7061-
+    14 000000A3 722064652063617261-
+    14 000000AC 637465726520696E74-
+    14 000000B5 726520313020736920-
+    14 000000BE 32302100           
+    15 000000C2 0A0D434F4420434F52-         mesaj_corect db 10, 13,'COD CORECT! Ati introdus un numar par de caractere intre 10 si 20!', 0
+    15 000000CB 454354212041746920-
+    15 000000D4 696E74726F64757320-
+    15 000000DD 756E206E756D617220-
+    15 000000E6 706172206465206361-
+    15 000000EF 726163746572652069-
+    15 000000F8 6E7472652031302073-
+    15 00000101 692032302100       
+    16 00000107 0A0D45524F4152453A-         mesaj_eroare db 10, 13,'EROARE: Ati introdus mai mult de 20 de caractere!', 0
+    16 00000110 2041746920696E7472-
+    16 00000119 6F647573206D616920-
+    16 00000122 6D756C742064652032-
+    16 0000012B 302064652063617261-
+    16 00000134 63746572652100     
+    17                                      
+    18                                  segment code use32 class=code
+    19                                  start:
+    20                                      ; Afiseaza mesaj introductiv
+    21 00000000 68[17000000]                push dword mesaj
+    22 00000005 FF15[00000000]              call [printf]
+    23 0000000B 83C404                      add esp, 4*1
+    24                                     
+    25 0000000E BE00000000                  mov ESI, 0
+    26                                      
+    27                                      ; Citeste un sir de la tastatura
+    28 00000013 8D05[00000000]              lea eax, [sir]       
+    29 00000019 50                          push eax
+    30 0000001A 68[14000000]                push dword formatCit
+    31 0000001F FF15[00000000]              call [scanf]
+    32 00000025 83C408                      add esp, 4*2
+    33                                  
+    34                                      ; Calculam lungimea sirului
+    35 00000028 B900000000                  mov ecx, 0
+    36                                      
+    37                                  calc_length:
+    38 0000002D 80B9[00000000]00            cmp byte [sir + ecx], 0
+    39 00000034 7408                        je  ver
+    40                                      
+    41 00000036 41                          inc ecx
+    42                                      
+    43 00000037 83F914                      cmp ecx, 20
+    44 0000003A 7D11                        jge lungime
+    45 0000003C EBEF                        jmp calc_length
+    46                                  
+    47                                  ver:
+    48 0000003E 83F90A                      cmp ecx, 10
+    49 00000041 7C49                        jl nesuf
+    50                                      
+    51 00000043 F7C101000000                test ecx, 1                
+    52 00000049 7517                        jnz impar    
+    53                                  
+    54 0000004B EB2A                        jmp bun
+    55                                      
+    56                                  lungime:
+    57                                      ; Mesaj pentru sirul cu lungime incorecta
+    58 0000004D 68[00000000]                push dword sir
+    59 00000052 68[07010000]                push dword mesaj_eroare
+    60 00000057 FF15[00000000]              call [printf]
+    61 0000005D 83C408                      add esp, 4*2
+    62 00000060 EB3D                        jmp pa
+    63                                      
+    64                                  impar:
+    65 00000062 68[00000000]                push dword sir
+    66 00000067 68[7F000000]                push dword mesaj_impar
+    67 0000006C FF15[00000000]              call [printf]
+    68 00000072 83C408                      add esp, 4*2
+    69 00000075 EB28                        jmp pa
+    70                                      
+    71                                  bun:
+    72                                      ; Afiseaza mesaj pentru cazul corect
+    73 00000077 68[00000000]                push dword sir
+    74 0000007C 68[C2000000]                push dword mesaj_corect
+    75 00000081 FF15[00000000]              call [printf]
+    76 00000087 83C408                      add esp, 4*2
+    77 0000008A EB13                        jmp pa
+    78                                      
+    79                                  nesuf:
+    80 0000008C 68[00000000]                push dword sir
+    81 00000091 68[4D000000]                push dword mesaj_mai_putin
+    82 00000096 FF15[00000000]              call [printf]
+    83 0000009C 83C408                      add esp, 4*2
+    84                                  
+    85                                  pa:                   
+    86 0000009F 6A00                        push dword 0
+    87 000000A1 FF15[00000000]              call [exit]
